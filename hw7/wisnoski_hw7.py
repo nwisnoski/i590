@@ -44,9 +44,7 @@ def SNPs_by_position(snp_list):
 
 def calc_pi_theta(snp_dict, num_sites):
 	h_values = {}
-	positions = range(num_sites)
-	snp_pairs = itertools.combinations(positions, 2)
-	print snp_pairs
+
 	for position in snp_dict.keys():
 		current_snp = snp_dict[position]
 		num_chromosomes = float(len(current_snp))
@@ -62,11 +60,57 @@ def calc_pi_theta(snp_dict, num_sites):
 	theta = num_sites / a
 	pi = sum(h_values.values()) / num_sites
 
-
 	return pi, theta
 
+def calc_r_sqared(snp_dict, num_sites):
+	positions = range(num_sites)
+	snp_pairs = itertools.combinations(positions, 2)
+	
+	for pair in snp_pairs:
+		snp1_pos, snp2_pos = pair[0], pair[1]
+		snp1, snp2 = snp_dict[snp1_pos], snp_dict[snp2_pos]
+		
+		haplotypes = {}
+		length = 0
+		for each in snp1:
+			length += 1
 
-def calculations(parsed_data,num_datasets,num_chromosomes):
+		for position in range(length):
+			haplotypes[position] = [snp1[position], snp2[position]]
+		unique_haps = {}
+		denominator = 0
+
+		allele_freqs1 = {}
+		allele_freqs2 = {}
+
+		for hap in haplotypes.values():
+			hap_str = ''.join(hap)
+			unique_haps[hap_str] = haplotypes.values().count(hap)/float(length)
+			a1, a2 = hap[0], hap[1]
+			if snp1.count(a1) > 0:
+				allele_freqs1[a1] = snp1.count(a1)/float(length)
+			if snp1.count(a2) > 0:
+				allele_freqs1[a2] = snp1.count(a2)/float(length)
+			if snp2.count(a1) > 0:
+				allele_freqs2[a1] = snp2.count(a1)/float(length)
+			if snp2.count(a2) > 0:
+				allele_freqs2[a2] = snp2.count(a2)/float(length)
+
+		hap = unique_haps.keys()[1]
+		a, b = hap[0], hap[1]
+		ab = unique_haps[hap]
+		a1 = allele_freqs1[a]
+		b1 = 1 - a1
+		a2 = allele_freqs2[b]
+		b2 = 1 - a2
+		D = ab - (a1 * a2)
+		
+		r2 = (D * D) / (a1 * b1 * a2 * b2)
+
+		print str(snp1_pos + 1) + " and " + str(snp2_pos + 1) + ":\t r2=" + str(r2)
+	print '\n'
+
+def manage_calculations(parsed_data,num_datasets,num_chromosomes):
 	current_dataset = 1
 	while num_datasets - current_dataset > -1:
 		# parse through each dataset to pull out relevant info
@@ -80,8 +124,10 @@ def calculations(parsed_data,num_datasets,num_chromosomes):
 		
 		print "Dataset: " + str(current_dataset)
 		print "Pi = " + str(pi)
-		print "Watterson's Theta = " + str(theta) + '\n'
+		print "Watterson's Theta = " + str(theta)
 
+		calc_r_sqared(SNP_dict, num_sites)
+		
 		current_dataset += 1
 
 
@@ -92,7 +138,7 @@ else:
 	in_file = open(filename, 'r')
 
 	parsed_data, num_datasets, num_chromosomes = parse_ms(in_file)
-	calculations(parsed_data, num_datasets, num_chromosomes)
+	manage_calculations(parsed_data, num_datasets, num_chromosomes)
 
 	in_file.close()
 
