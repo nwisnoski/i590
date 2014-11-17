@@ -48,8 +48,8 @@ def SNPs_by_position(snp_list):
 	return snp_dict
 
 def calc_pi_theta(snp_dict, num_sites):
-	h_values = {}
-
+	#h_values = {}
+	h_values = []
 	for position in snp_dict.keys():
 		current_snp = snp_dict[position]
 		num_chromosomes = float(len(current_snp))
@@ -58,12 +58,14 @@ def calc_pi_theta(snp_dict, num_sites):
 		p0_squared = p_0 * p_0
 		p1_squared = p_1 * p_1
 		h = (num_chromosomes/(num_chromosomes-1.0))*(1.0-(p0_squared + p1_squared))
-		h_values[position] = h
+		#h_values[position] = h
+		h_values.append(h)
 		
 	a_i = [1.0/(n+1.0) for n in range(num_sites)]
 	a = sum(a_i)
 	theta = num_sites / a
-	pi = sum(h_values.values()) #/ num_sites
+	#pi = sum(h_values.values()) #/ num_sites
+	pi = sum(h_values)
 
 	return pi, theta
 
@@ -136,10 +138,11 @@ def manage_calculations(parsed_data,num_datasets,num_chromosomes):
 		# calc_r_sqared(SNP_dict, num_sites)
 		
 		current_dataset += 1
+	
 	count = 0
-	for each in pi_values:
-		if float(each) <= float(1):
-		 	print each
+	for pi in pi_values:
+		if pi < float(1):
+		 	print pi
 		 	count += 1
 	return count
 
