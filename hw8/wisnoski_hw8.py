@@ -1,10 +1,11 @@
 #! /usr/bin/env python
 
 usage = """
-Homework 7 - Nathan Wisnoski
-Calculates pi, theta, and r^2 from each dataset.
+Homework 8 - Nathan Wisnoski
+Calculates pi and 
 
-usage: $ python wisnoski_hw7.py file.ms
+usage: $ python wisnoski_hw8.py file.ms
+where first line in file.ms startswith "./msdir" or "ms"
 """
 
 import sys
@@ -17,7 +18,11 @@ def parse_ms(in_file):
 	for line in in_file:
 		line = line.strip()
 		line_num += 1
-		if line.startswith('./ms'): # identify dataset characteristics
+		if line.startswith('ms'): # identify dataset characteristics
+			line = line.split(' ')
+			num_chromosomes = int(line[1])
+			num_datasets = int(line[2])
+		elif line.startswith('./'): # identify dataset characteristics
 			line = line.split(' ')
 			num_chromosomes = int(line[1])
 			num_datasets = int(line[2])
@@ -58,7 +63,7 @@ def calc_pi_theta(snp_dict, num_sites):
 	a_i = [1.0/(n+1.0) for n in range(num_sites)]
 	a = sum(a_i)
 	theta = num_sites / a
-	pi = sum(h_values.values()) / num_sites
+	pi = sum(h_values.values()) #/ num_sites
 
 	return pi, theta
 
@@ -128,13 +133,16 @@ def manage_calculations(parsed_data,num_datasets,num_chromosomes):
 		# print "Dataset: " + str(current_dataset)
 		# print "Pi = " + str(pi)
 		# print "Watterson's Theta = " + str(theta)
-
 		# calc_r_sqared(SNP_dict, num_sites)
 		
 		current_dataset += 1
+	count = 0
 	for each in pi_values:
-		if float(each) >= 1:
-			print each
+		if float(each) <= float(1):
+		 	print each
+		 	count += 1
+	return count
+
 
 
 if len(sys.argv) < 2:
@@ -144,7 +152,10 @@ else:
 	in_file = open(filename, 'r')
 
 	parsed_data, num_datasets, num_chromosomes = parse_ms(in_file)
-	manage_calculations(parsed_data, num_datasets, num_chromosomes)
+	count = manage_calculations(parsed_data, num_datasets, num_chromosomes)
+
+	print "The number of sites at which Pi is < or == 1 is: " + str(count)
+	print "so the resulting p-value is: " + str(count/num_datasets)
 
 	in_file.close()
 
