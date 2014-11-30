@@ -13,6 +13,7 @@ Usage: "wisnoski_hw1.py sequence.fa"
 """
 
 import sys
+import math
 
 # checks to ensure usage is correct
 if len(sys.argv) < 2:
@@ -37,13 +38,6 @@ else:
 			in_seqs[current_seq] = "" # create dictionary key
 		else:
 			in_seqs[current_seq] += each # add sequence to dictionary 
-	
-
-	
-	
-		
-		#print in_seqs[seq_id]
-	
 	
 	# calculate num chromosomes
 	chrom_count = len(in_seqs.keys())
@@ -72,6 +66,7 @@ else:
 	seq_lengths = []		
 	seq_len = 0
 	
+	# Calculate Pi
 	for locus in seqs_by_position.values(): # iterate over list of nucs at each position
 		set_of_bases = set(locus) # to asses nucleotide diversity at each locus
 		#print set_of_bases
@@ -117,14 +112,36 @@ else:
 		else:
 			seq_len += 1	
 					
-	# here, heterozygosities should be a list of h at each location in our sequence
-	#print heterozygosities
 	pi = sum(heterozygosities)
-	
-	print "Number of SNPs: " + str(snp_count)
-	print "Number of chromosomes: " + str(chrom_count)
-	print "Sequence length: " + str(seq_len)
-	print "Pi/sequence: " + str(pi/seq_len)
+
+	# Calculate Wattersons Theta
+	a1_i = []
+	a2_i = []
+	for i in range(chrom_count-1): # sums 1 / 1 - 11
+		 a1_i.append(1.0/(i+1))
+		 a2_i.append(1.0/((i+1)*(i+1)))
+	a1 = sum(a1_i)
+	a2 = sum(a2_i)
+	theta_W = snp_count / a1
+
+	# Calculate Tajima's D
+	n = chrom_count
+	d = pi - theta_W
+	S = snp_count
+
+	b1 = (n+1)/(3*(n-1.0))
+	c1 = b1 - 1.0 / a1
+	e1 = c1 / a1
+	b2 = 2.0 * (n * n + n + 3.0) / (9.0 * n * (n - 1.0))
+	c2 = b2 - (n + 2.0)/(a1 * n) + a2/(a1*a1)
+	e2 = c2 / (a1*a1 + a2)
+
+	D = d / math.sqrt(e1*S + e2*S*(S-1))
+
+	print "Pi: " + str(pi)
+	print "Theta_w: " + str(theta_W)
+	print "Tajima's D: " + str(D)
+
 	
 	# close file
 	in_file.close()
